@@ -18,5 +18,9 @@ Hey, I’m a Systems Engineer who works across infrastructure, automation, and v
 
 I use GitHub to track my own tooling, build reusable infrastructure pieces, and share things that might save another engineer a headache or three.
 
+## 🏡 Homelab-Backed
+
+Everything in here is battle-tested in my home lab — a RHEL-powered, vCenter-driven sandbox where I run Horizon VDI and explore scalable systems from the ground up.
+
 ---
 🤖 *Engineered for uptime, with a bias toward automation.*
