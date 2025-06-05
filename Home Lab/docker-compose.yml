@@ -92,3 +92,64 @@ services:
     ports:
       - 4545:4545
     restart: unless-stopped
+
+  gluetun:
+    image: qmcgaw/gluetun
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    ports:
+      - 8888:8888/tcp # HTTP proxy
+      - 8388:8388/tcp # Shadowsocks
+      - 8388:8388/udp # Shadowsocks
+      - 8112:8112/tcp # Deluge Web UI
+      - 6881:6881/tcp # Deluge incoming port
+      - 6881:6881/udp # Deluge incoming port
+    volumes:
+      - /home/scmx/containers/gluetun:/gluetun
+    environment:
+      - VPN_SERVICE_PROVIDER=protonvpn
+      - VPN_TYPE=wireguard
+      - WIREGUARD_PRIVATE_KEY={your_private_key_here}
+      - SERVER_COUNTRIES=Switzerland
+      - PORT_FORWARD_ONLY=on
+      - TZ=America/New_York
+      # Server list updater
+      # See https://github.com/qdm12/gluetun-wiki/blob/main/setup/servers.md#update-the-vpn-servers-list
+      - VPN_PORT_FORWARDING=on
+
+  deluge:
+    image: lscr.io/linuxserver/deluge:latest
+    container_name: deluge
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_York
+      - DELUGE_WEB_PORT=8112
+      - DELUGE_LOGLEVEL=error #optional
+    volumes:
+      - /home/scmx/containers/deluge:/config
+      - /mnt/data/Downloads:/downloads
+#   ports:
+#      - 8112:8112
+#      - 6881:6881
+#      - 6881:6881/udp
+#      - 58846:58846 #optional
+    network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
+    restart: unless-stopped
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_HTML=${LOG_HTML:-false}
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+      - TZ=America/New_York
+    ports:
+      - "${PORT:-8191}:8191"
+    restart: unless-stopped 
