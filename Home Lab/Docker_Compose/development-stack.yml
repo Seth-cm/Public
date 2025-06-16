@@ -1,0 +1,16 @@
+version: "3.9"
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    restart: always
+    hostname: 'gitlab.scmx.lan'   # ← Change this to your domain or hostname
+    container_name: gitlab
+    ports:
+      - "80:80"       # HTTP
+      - "443:443"     # HTTPS
+      - "22:22"       # SSH (for Git access)
+    volumes:
+      - /home/scmx/containers/gitlab/config:/etc/gitlab
+      - /home/scmx/containers/gitlab/logs:/var/log/gitlab
+      - /home/scmx/containers/gitlab/data:/var/opt/gitlab
+    shm_size: '512m'   # Shared memory size (improves performance)
