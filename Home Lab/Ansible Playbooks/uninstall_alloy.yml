@@ -1,0 +1,38 @@
+---
+- name: Uninstall Grafana Alloy
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Stop Alloy service if running
+      ansible.builtin.systemd:
+        name: alloy
+        state: stopped
+        enabled: false
+      ignore_errors: true
+
+    - name: Remove Alloy systemd unit
+      ansible.builtin.file:
+        path: /etc/systemd/system/alloy.service
+        state: absent
+
+    - name: Reload systemd daemon
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Remove Alloy binary
+      ansible.builtin.file:
+        path: /usr/local/bin/alloy
+        state: absent
+
+    - name: Remove Alloy config directory
+      ansible.builtin.file:
+        path: /etc/alloy
+        state: absent
+
+    - name: Remove Alloy user and group
+      ansible.builtin.user:
+        name: alloy
+        state: absent
+        remove: yes
+      ignore_errors: true

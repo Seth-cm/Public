@@ -1,0 +1,33 @@
+- name: Bootstrap svc_ansible user
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Create svc_ansible user
+      user:
+        name: svc_ansible
+        shell: /bin/bash
+        create_home: yes
+
+    - name: Create .ssh directory
+      file:
+        path: /home/svc_ansible/.ssh
+        state: directory
+        owner: svc_ansible
+        group: svc_ansible
+        mode: '0700'
+
+    - name: Add public key to authorized_keys
+      copy:
+        dest: /home/svc_ansible/.ssh/authorized_keys
+        content: |
+          ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKZQwg42iodRAll/1E0gBOgxK3SKuuxs8h1Co/b6HmiR svc_ansible@RHEL-Control
+        owner: svc_ansible
+        group: svc_ansible
+        mode: '0600'
+
+    - name: Allow passwordless sudo for svc_ansible
+      copy:
+        dest: /etc/sudoers.d/svc_ansible
+        content: "svc_ansible ALL=(ALL) NOPASSWD: ALL\n"
+        mode: '0440'

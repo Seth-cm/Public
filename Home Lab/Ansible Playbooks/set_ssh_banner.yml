@@ -1,0 +1,49 @@
+- name: Configure SSH login banner for SCMX
+  hosts: all
+  become: true
+
+  vars:
+    banner_file_path: /etc/issue.net
+    banner_message: |
+      ********************************************************************
+      *                                                                  *
+      *   🚨 WARNING: UNAUTHORIZED ACCESS TO SCMX SYSTEMS IS PROHIBITED 🚨   *
+      *                                                                  *
+      *   This system is owned and managed by SCMX. All access and       *
+      *   activity is logged and monitored. If you are not authorized,   *
+      *   disconnect immediately.                                        *
+      *                                                                  *
+      *   Violators may be prosecuted to the fullest extent of the law. *
+      *                                                                  *
+      ********************************************************************
+
+  tasks:
+    - name: Set the SSH login banner message
+      copy:
+        dest: "{{ banner_file_path }}"
+        content: "{{ banner_message }}"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Ensure SSH config enables the banner and login messages
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^{{ item.key }}'
+        line: "{{ item.key }} {{ item.value }}"
+        state: present
+        validate: '/usr/sbin/sshd -t -f %s'
+      loop:
+        - { key: 'Banner', value: '{{ banner_file_path }}' }
+        - { key: 'PrintMotd', value: 'yes' }
+        - { key: 'PrintLastLog', value: 'yes' }
+
+    - name: Remove .hushlogin if present (suppresses banners)
+      file:
+        path: "/home/{{ ansible_user }}/.hushlogin"
+        state: absent
+
+    - name: Restart SSH to apply banner changes
+      service:
+        name: sshd
+        state: restarted

@@ -1,0 +1,25 @@
+- name: Sync /etc/sudoers across all nodes
+  hosts: all
+  become: true
+
+  vars:
+    sudoers_source: "{{ playbook_dir }}/../files/sudoers"
+
+  tasks:
+    - name: Validate new sudoers file
+      ansible.builtin.copy:
+        src: "{{ sudoers_source }}"
+        dest: /tmp/sudoers.new
+        owner: root
+        group: root
+        mode: '0440'
+        validate: '/usr/sbin/visudo -cf %s'
+
+    - name: Deploy validated sudoers file
+      ansible.builtin.copy:
+        src: "{{ sudoers_source }}"
+        dest: /etc/sudoers
+        owner: root
+        group: root
+        mode: '0440'
+        validate: '/usr/sbin/visudo -cf %s'

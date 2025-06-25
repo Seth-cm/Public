@@ -1,0 +1,27 @@
+- name: Install Fastfetch and configure for all users
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Enable EPEL repository
+      package:
+        name: epel-release
+        state: present
+
+    - name: Install fastfetch
+      package:
+        name: fastfetch
+        state: present
+
+    - name: Create profile.d script to run fastfetch on login
+      copy:
+        dest: /etc/profile.d/fastfetch.sh
+        content: |
+          #!/bin/bash
+          # Run fastfetch for interactive shells only
+          if [[ $- == *i* ]] && command -v fastfetch >/dev/null 2>&1; then
+              fastfetch
+          fi
+        mode: '0755'
+        owner: root
+        group: root
