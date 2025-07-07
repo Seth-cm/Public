@@ -7,10 +7,10 @@
       user:
         name: svc_ansible
         shell: /bin/bash
-        create_home: yes
+        create_home: true
 
     - name: Create .ssh directory
-      file:
+      ansible.builtin.file:
         path: /home/svc_ansible/.ssh
         state: directory
         owner: svc_ansible
