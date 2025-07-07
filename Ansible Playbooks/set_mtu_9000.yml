@@ -1,0 +1,25 @@
+---
+- name: Set MTU to 9000 on RHEL systems
+  hosts: all
+  become: yes
+  gather_facts: yes
+
+  tasks:
+    - name: Filter physical interfaces (skip lo, docker, podman, veth)
+      set_fact:
+        mtu_interfaces: >-
+          {{ ansible_facts.interfaces
+             | reject('match', '^lo$')
+             | reject('match', '^veth')
+             | reject('match', '^docker')
+             | reject('match', '^podman')
+             | select('match', '^(en|eth|eno).*')
+             | list }}
+
+    - name: Debug interfaces to modify
+      debug:
+        var: mtu_interfaces
+
+    - name: Set MTU to 9000 on each interface
+      ansible.builtin.shell: ip link set dev {{ item }} mtu 9000
+      loop: "{{ mtu_interfaces }}"

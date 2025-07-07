@@ -1,0 +1,28 @@
+---
+- name: Perform DNF update on RHEL systems
+  hosts: all
+  become: true
+  tasks:
+    - name: Ensure dnf is present
+      ansible.builtin.package:
+        name: dnf
+        state: present
+
+    - name: Clean DNF metadata
+      ansible.builtin.command: dnf clean all
+      changed_when: false
+
+    - name: Ensure all packages are present with DNF
+      ansible.builtin.dnf:
+        name: "*"
+        state: present
+        update_cache: yes
+
+    - name: Reboot if kernel or critical packages were updated
+      ansible.builtin.reboot:
+        msg: "Rebooting after kernel or critical package update"
+        connect_timeout: 5
+        reboot_timeout: 600
+        pre_reboot_delay: 5
+        post_reboot_delay: 10
+      when: ansible_facts.packages['kernel'] is defined
