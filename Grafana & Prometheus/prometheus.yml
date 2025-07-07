@@ -1,0 +1,29 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9091']
+
+  - job_name: 'alloy'
+    metrics_path: /api/v0/component/prometheus.exporter.unix.node/metrics
+    static_configs:
+      - targets:
+        - rhel-monitor.scmx.lan:12345
+        - rhel-control.scmx.lan:12345
+        - rhel-media.scmx.lan:12345
+        - rhel-lancache.scmx.lan:12345
+        - rhel-caddy-internal.scmx.lan:12345
+
+  - job_name: 'unpoller'
+    static_configs:
+      - targets: ['unpoller:9130']  # or use IP/hostname
+
+  - job_name: 'podman'
+    static_configs:
+      - targets: ['10.60.0.21:9882'] 
+
+  - job_name: 'vcenter'
+    static_configs:
+      - targets: ['otel-collector:8889']

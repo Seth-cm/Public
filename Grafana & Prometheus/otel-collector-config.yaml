@@ -1,0 +1,18 @@
+receivers:
+  vcenter:
+    endpoint: https://vcsa.scmx.lan/sdk
+    username: username@scmx.lan
+    password: password
+    collection_interval: 1m
+    tls:
+      insecure_skip_verify: true  # set to false if using valid cert
+
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+
+service:
+  pipelines:
+    metrics:
+      receivers: [vcenter]
+      exporters: [prometheus]

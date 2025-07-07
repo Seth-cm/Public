@@ -1,0 +1,4 @@
+#config file for alloy install on linux
+
+prometheus.exporter.unix "node" {
+}

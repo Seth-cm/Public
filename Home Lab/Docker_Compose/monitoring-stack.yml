@@ -39,7 +39,7 @@ services:
     restart: unless-stopped
     ports:
       - "9091:9091"
-    command: --config.file=/etc/prometheus/prometheus.yml --web.listen-address=:9091
+    command: --config.file=/etc/prometheus/prometheus.yml --web.listen-address=:9091 --web.enable-admin-api
     volumes:
       - /home/scmx/containers/prometheus/prometheus_data:/prometheus
       - /home/scmx/containers/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
@@ -86,11 +86,9 @@ services:
       - UP_PROMETHEUS_NAMESPACE=unpoller
       - UP_INFLUXDB_DISABLE=true
       - UP_POLLER_DEBUG=true
-
-      # UniFi OS-specific settings
       - UP_UNIFI_CONTROLLER_0_URL=https://10.0.0.1
       - UP_UNIFI_CONTROLLER_0_USER=unifipoller
-      - UP_UNIFI_CONTROLLER_0_PASS=REDACTED
+      - UP_UNIFI_CONTROLLER_0_PASS=password
       - UP_UNIFI_CONTROLLER_0_SITE=default
       - UP_UNIFI_CONTROLLER_0_IS_UNIFI_OS=true
       - UP_UNIFI_CONTROLLER_0_SAVE_ALARMS=true
@@ -99,3 +97,21 @@ services:
       - UP_UNIFI_CONTROLLER_0_SAVE_EVENTS=true
       - UP_UNIFI_CONTROLLER_0_SAVE_IDS=true
       - UP_UNIFI_CONTROLLER_0_SAVE_SITES=true
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib
+    container_name: otel-collector
+    volumes:
+      - /home/scmx/containers/otel-collector/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+    environment:
+      - TZ=America/New_York
+    ports:
+      - 1888:1888 # pprof extension
+      - 8888:8888 # Prometheus metrics exposed by the Collector
+      - 8889:8889 # Prometheus exporter metrics
+      - 13133:13133 # health_check extension
+      - 4317:4317 # OTLP gRPC receiver
+      - 4318:4318 # OTLP http receiver
+      - 55679:55679 # zpages extension
+    networks:
+    - monitoring
